@@ -1,0 +1,42 @@
+const descriptors = [
+    'Oak',
+    'Elm',
+    'Pine',
+    'Rustic',
+    'Rolling',
+    'Roaring',
+    'Lake',
+    'Sea',
+    'Bay',
+    'Silent',
+    'Dusty',
+    'Winding',
+    'Twisting',
+    'Sunny',
+    'Redwood',
+    'Windy',
+    'Shallow',
+    'Forest',
+    'Wild',
+    'Tumbling',
+    'Shady'
+]
+
+const places = [
+    'Village',
+    'Camp',
+    'Landing',
+    'Canyon',
+    'Flats',
+    'River',
+    'Creek',
+    'Creekside',
+    'Backcountry',
+    'Springs',
+    'Park',
+    'Ranch',
+    'Camper',
+    'Meadow',
+    'Acres',
+    'RV Park'
+]
