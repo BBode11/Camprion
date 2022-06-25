@@ -7,10 +7,17 @@
     <title>Campground Details</title>
 </head>
 <body>
-    <h1>Deatils for <%=campground.title%>!</h1>
-    <h2><%= campground.location%></h2>
+    <h1>Deatils for <%= campground.title %>!</h1>
+    <h2><%= campground.location %></h2>
+
+    <p>
+        <form action="/campgrounds/<%= campground._id %>?_method=DELETE" method="POST">
+            <button>Delete</button>
+        </form>
+    </p>
     
     <footer>
+        <a href="/campgrounds/<%= campground._id %>/edit">Edit Campground</a> |
         <a href="/campgrounds">All Campgrounds</a>
     </footer>
 </body>
