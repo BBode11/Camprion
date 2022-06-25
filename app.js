@@ -1,8 +1,9 @@
-//Required express, mongoose, and path
+//Required express, mongoose, path, and override
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 const Campground = require('./models/campground');
+const methodOverride = require('method-override');
 
 //Setup for the mongo database on localhost
 mongoose.connect('mongodb://localhost:27017/camprion');
@@ -21,6 +22,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
 
 //Rendering the home.ejs file within the views directory
 app.get('/', function (req, res) {
@@ -51,6 +53,25 @@ app.get('/campgrounds/:id', async (req, res) => {
     res.render('campgrounds/show', { campground })
 });
 
+//Rendeing edit form for campgrounds
+app.get('/campgrounds/:id/edit', async (req, res) => {
+    const campground = await Campground.findById(req.params.id)
+    res.render('campgrounds/edit', { campground })
+});
+
+//Put request for updating campgrounds by ID
+app.put('/campgrounds/:id', async (req, res) => {
+    const { id } = req.params;
+    const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground });
+    res.redirect(`/campgrounds/${campground._id}`);
+});
+
+//Delete request for campgrounds by ID
+app.delete('/campgrounds/:id', async (req, res) => {
+    const { id } = req.params;
+    await Campground.findByIdAndDelete(id);
+    res.redirect('/campgrounds');
+})
 
 
 //Started the app with nodemon on port 3000
