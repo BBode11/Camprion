@@ -20,20 +20,38 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+app.use(express.urlencoded({ extended: true }));
+
 //Rendering the home.ejs file within the views directory
 app.get('/', function (req, res) {
     res.render('home');
 });
 
-//Seed data for creating a campground
-app.get('/makecampground', async (req, res) => {
-    const camp = new Campground({
-        title: 'Whispering Pine',
-        description: 'Cheap camping near TC.'
-    });
-    await camp.save();
-    res.send(camp);
+//Rendering campgrounds/index.js file within views directory
+app.get('/campgrounds', async (req, res) => {
+    const campgrounds = await Campground.find()
+    res.render('campgrounds/index', { campgrounds })
 });
+
+//Rendering create form for campgrounds
+app.get('/campgrounds/create', (req, res) => {
+    res.render('campgrounds/create');
+});
+
+//Post request for saving newly created campgrounds
+app.post('/campgrounds', async (req, res) => {
+    const campground = new Campground(req.body.campground);
+    await campground.save();
+    res.redirect(`/campgrounds/${campground._id}`);
+});
+
+//Rendering campground based on ID
+app.get('/campgrounds/:id', async (req, res) => {
+    const campground = await Campground.findById(req.params.id)
+    res.render('campgrounds/show', { campground })
+});
+
+
 
 //Started the app with nodemon on port 3000
 app.listen(3000, () => {
