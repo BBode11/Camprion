@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 const Campground = require('./models/campground');
 const methodOverride = require('method-override');
+const ejsMate = require('ejs-mate');
 
 //Setup for the mongo database on localhost
 mongoose.connect('mongodb://localhost:27017/camprion');
@@ -18,6 +19,7 @@ const app = express();
 
 
 //Set the view engine to ejs
+app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
