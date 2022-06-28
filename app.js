@@ -5,6 +5,7 @@ const path = require('path');
 const Campground = require('./models/campground');
 const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
+const catchAsync = require('./utilities/catchAsync');
 
 //Setup for the mongo database on localhost
 mongoose.connect('mongodb://localhost:27017/camprion');
@@ -32,10 +33,10 @@ app.get('/', function (req, res) {
 });
 
 //Rendering campgrounds/index.js file within views directory
-app.get('/campgrounds', async (req, res) => {
+app.get('/campgrounds', catchAsync(async (req, res) => {
     const campgrounds = await Campground.find()
     res.render('campgrounds/index', { campgrounds })
-});
+}));
 
 //Rendering create form for campgrounds
 app.get('/campgrounds/create', (req, res) => {
@@ -43,37 +44,42 @@ app.get('/campgrounds/create', (req, res) => {
 });
 
 //Post request for saving newly created campgrounds
-app.post('/campgrounds', async (req, res) => {
+app.post('/campgrounds', catchAsync(async (req, res, next) => {
     const campground = new Campground(req.body.campground);
     await campground.save();
     res.redirect(`/campgrounds/${campground._id}`);
-});
+}));
 
 //Rendering campground based on ID
-app.get('/campgrounds/:id', async (req, res) => {
+app.get('/campgrounds/:id', catchAsync(async (req, res) => {
     const campground = await Campground.findById(req.params.id)
     res.render('campgrounds/show', { campground })
-});
+}));
 
 //Rendeing edit form for campgrounds
-app.get('/campgrounds/:id/edit', async (req, res) => {
+app.get('/campgrounds/:id/edit', catchAsync(async (req, res) => {
     const campground = await Campground.findById(req.params.id)
     res.render('campgrounds/edit', { campground })
-});
+}));
 
 //Put request for updating campgrounds by ID
-app.put('/campgrounds/:id', async (req, res) => {
+app.put('/campgrounds/:id', catchAsync(async (req, res) => {
     const { id } = req.params;
     const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground });
     res.redirect(`/campgrounds/${campground._id}`);
-});
+}));
 
 //Delete request for campgrounds by ID
-app.delete('/campgrounds/:id', async (req, res) => {
+app.delete('/campgrounds/:id', catchAsync(async (req, res) => {
     const { id } = req.params;
     await Campground.findByIdAndDelete(id);
     res.redirect('/campgrounds');
-})
+}));
+
+//Generic error handler function
+app.use((err, req, res, next) => {
+    res.send('something went wrongo')
+});
 
 
 //Started the app with nodemon on port 3000
