@@ -6,6 +6,9 @@ const Campground = require('./models/campground');
 const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
 const catchAsync = require('./utilities/catchAsync');
+const { resolveNs } = require('dns/promises');
+const expressError = require('./utilities/expressError');
+const ExpressError = require('./utilities/expressError');
 
 //Setup for the mongo database on localhost
 mongoose.connect('mongodb://localhost:27017/camprion');
@@ -45,6 +48,7 @@ app.get('/campgrounds/create', (req, res) => {
 
 //Post request for saving newly created campgrounds
 app.post('/campgrounds', catchAsync(async (req, res, next) => {
+    if (!req.body.campground) throw new ExpressError('Invalid Camground Data', 400);
     const campground = new Campground(req.body.campground);
     await campground.save();
     res.redirect(`/campgrounds/${campground._id}`);
@@ -76,9 +80,15 @@ app.delete('/campgrounds/:id', catchAsync(async (req, res) => {
     res.redirect('/campgrounds');
 }));
 
+app.all('*', (res, req, next) => {
+    next(new ExpressError('Page Not Found', 404));
+});
+
 //Generic error handler function
 app.use((err, req, res, next) => {
-    res.send('something went wrongo')
+    const { statusCode = 500 } = err;
+    if (!err.message) err.message = "Something happened...but it was not good. "
+    res.status(statusCode).render('error', { err });
 });
 
 
