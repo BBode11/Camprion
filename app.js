@@ -9,6 +9,8 @@ const catchAsync = require('./utilities/catchAsync');
 const { resolveNs } = require('dns/promises');
 const expressError = require('./utilities/expressError');
 const ExpressError = require('./utilities/expressError');
+const exp = require('constants');
+const { campgroundSchema } = require('./schemas.js')
 
 //Setup for the mongo database on localhost
 mongoose.connect('mongodb://localhost:27017/camprion');
@@ -30,6 +32,17 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 
+//Middleware for validation
+const validateCampground = (req, res, next) => {
+    const { error } = campgroundSchema.validate(req.body);
+    if (error) {
+        const msg = error.details.map(el => el.message).join(',');
+        throw new ExpressError(msg, 400);
+    } else {
+        next();
+    }
+}
+
 //Rendering the home.ejs file within the views directory
 app.get('/', function (req, res) {
     res.render('home');
@@ -47,8 +60,7 @@ app.get('/campgrounds/create', (req, res) => {
 });
 
 //Post request for saving newly created campgrounds
-app.post('/campgrounds', catchAsync(async (req, res, next) => {
-    if (!req.body.campground) throw new ExpressError('Invalid Camground Data', 400);
+app.post('/campgrounds', validateCampground, catchAsync(async (req, res, next) => {
     const campground = new Campground(req.body.campground);
     await campground.save();
     res.redirect(`/campgrounds/${campground._id}`);
@@ -67,7 +79,7 @@ app.get('/campgrounds/:id/edit', catchAsync(async (req, res) => {
 }));
 
 //Put request for updating campgrounds by ID
-app.put('/campgrounds/:id', catchAsync(async (req, res) => {
+app.put('/campgrounds/:id', validateCampground, catchAsync(async (req, res) => {
     const { id } = req.params;
     const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground });
     res.redirect(`/campgrounds/${campground._id}`);
