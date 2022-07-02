@@ -10,7 +10,9 @@ const { resolveNs } = require('dns/promises');
 const expressError = require('./utilities/expressError');
 const ExpressError = require('./utilities/expressError');
 const exp = require('constants');
-const { campgroundSchema } = require('./schemas.js')
+const { campgroundSchema } = require('./schemas.js');
+const Review = require('./models/review.js');
+const campground = require('./models/campground');
 
 //Setup for the mongo database on localhost
 mongoose.connect('mongodb://localhost:27017/camprion');
@@ -90,6 +92,15 @@ app.delete('/campgrounds/:id', catchAsync(async (req, res) => {
     const { id } = req.params;
     await Campground.findByIdAndDelete(id);
     res.redirect('/campgrounds');
+}));
+
+app.post('/campgrounds/:id/reviews', catchAsync(async (req, res) => {
+    const campground = await Campground.findById(req.params.id);
+    const review = new Review(req.body.review);
+    campground.reviews.push(review);
+    await review.save();
+    await campground.save();
+    res.redirect(`/campgrounds/${campground._id}`);
 }));
 
 app.all('*', (res, req, next) => {
