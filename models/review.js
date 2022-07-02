@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 //Defined schema for campground reviews
 const ReviewSchema = new Schema({
     body: String,
-    rating: number
+    rating: Number
 });
 
 module.exports = mongoose.model('Review', ReviewSchema)
