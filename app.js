@@ -11,6 +11,7 @@ const expressError = require('./utilities/expressError');
 const ExpressError = require('./utilities/expressError');
 const exp = require('constants');
 const { campgroundSchema } = require('./schemas.js');
+const { reviewSchema } = require('./schemas.js');
 const Review = require('./models/review.js');
 const campground = require('./models/campground');
 
@@ -45,6 +46,17 @@ const validateCampground = (req, res, next) => {
     }
 }
 
+//Middleware for review validation
+const validateReview = (req, res, next) => {
+    const { error } = reviewSchema.validate(req.body);
+    if (error) {
+        const msg = error.details.map(el => el.message).join(',');
+        throw new ExpressError(msg, 400);
+    } else {
+        next();
+    }
+}
+
 //Rendering the home.ejs file within the views directory
 app.get('/', function (req, res) {
     res.render('home');
@@ -70,14 +82,14 @@ app.post('/campgrounds', validateCampground, catchAsync(async (req, res, next) =
 
 //Rendering campground based on ID
 app.get('/campgrounds/:id', catchAsync(async (req, res) => {
-    const campground = await Campground.findById(req.params.id)
-    res.render('campgrounds/show', { campground })
+    const campground = await Campground.findById(req.params.id).populate('reviews');
+    res.render('campgrounds/show', { campground });
 }));
 
 //Rendeing edit form for campgrounds
 app.get('/campgrounds/:id/edit', catchAsync(async (req, res) => {
-    const campground = await Campground.findById(req.params.id)
-    res.render('campgrounds/edit', { campground })
+    const campground = await Campground.findById(req.params.id);
+    res.render('campgrounds/edit', { campground });
 }));
 
 //Put request for updating campgrounds by ID
@@ -94,7 +106,8 @@ app.delete('/campgrounds/:id', catchAsync(async (req, res) => {
     res.redirect('/campgrounds');
 }));
 
-app.post('/campgrounds/:id/reviews', catchAsync(async (req, res) => {
+//Post request for reviews based on campground ID
+app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async (req, res) => {
     const campground = await Campground.findById(req.params.id);
     const review = new Review(req.body.review);
     campground.reviews.push(review);
