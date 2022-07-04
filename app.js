@@ -61,17 +61,19 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 app.use((req, res, next) => {
+    //console.log(req.session);
+    res.locals.currentUser = req.user;
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
     next();
 });
 
 
-app.get('/fakeUser', async (req, res) => {
-    const user = new User({ email: 'blan@gamil.com', username: 'blan' });
-    const newUser = await User.register(user, 'password');
-    res.send(newUser);
-});
+//app.get('/fakeUser', async (req, res) => {
+//    const user = new User({ email: 'blan@gamil.com', username: 'blan' });
+//    const newUser = await User.register(user, 'password');
+//    res.send(newUser);
+//});
 
 //App.use for declared routes
 app.use('/campgrounds', campgroundRoutes);
