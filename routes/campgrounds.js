@@ -26,7 +26,12 @@ router.post('/', isLoggedIn, validateCampground, catchAsync(async (req, res, nex
 
 //Rendering campground based on ID
 router.get('/:id', catchAsync(async (req, res) => {
-    const campground = await Campground.findById(req.params.id).populate('reviews').populate('author');
+    const campground = await Campground.findById(req.params.id).populate({
+        path: 'reviews',
+        populate: {
+            path: 'author'
+        }
+    }).populate('author');
     if (!campground) {
         req.flash('error', 'Unable to find the campground you are looking for.');
         res.redirect('/campgrounds');
