@@ -5,8 +5,7 @@ const ExpressError = require('../utilities/expressError');
 const Review = require('../models/review.js');
 const { reviewSchema } = require('../schemas.js');
 const Campground = require('../models/campground');
-
-
+const { isLoggedIn } = require('../middleware');
 
 
 //Middleware for review validation
