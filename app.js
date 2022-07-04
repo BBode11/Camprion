@@ -33,6 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use('/campgrounds', campgrounds);
 app.use('/campgrounds/:id/reviews', reviews);
+app.use(express.static(path.join(__dirname, 'public')));
 
 //Rendering the home.ejs file within the views directory
 app.get('/', function (req, res) {
