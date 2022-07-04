@@ -1,6 +1,7 @@
 const { campgroundSchema, reviewSchema } = require('./schemas.js');
 const ExpressError = require('./utilities/expressError');
 const Campground = require('./models/campground');
+const Review = require('./models/review');
 
 
 //Middleware for validation
@@ -42,4 +43,15 @@ module.exports.validateReview = (req, res, next) => {
     } else {
         next();
     }
+}
+
+//Middleware for review author validation
+module.exports.isReviewAuthor = async (req, res, next) => {
+    const { id, reviewId } = req.params;
+    const review = await Review.findById(reviewId);
+    if (!review.author.equals(req.user._id)) {
+        req.flash('error', 'You do not have write permissions.')
+        return res.redirect(`/campgrounds/${id}`);
+    }
+    next();
 }
