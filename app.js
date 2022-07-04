@@ -2,19 +2,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
-const Campground = require('./models/campground');
 const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
-const catchAsync = require('./utilities/catchAsync');
-const { resolveNs } = require('dns/promises');
-const expressError = require('./utilities/expressError');
 const ExpressError = require('./utilities/expressError');
-const exp = require('constants');
-const { campgroundSchema } = require('./schemas.js');
-const { reviewSchema } = require('./schemas.js');
-const Review = require('./models/review.js');
-const campground = require('./models/campground');
+
+
+//Setup for routes
 const campgrounds = require('./routes/campgrounds');
+const reviews = require('./routes/reviews');
+
+
 
 //Setup for the mongo database on localhost
 mongoose.connect('mongodb://localhost:27017/camprion');
@@ -27,7 +24,6 @@ db.once('open', () => {
 
 const app = express();
 
-
 //Set the view engine to ejs
 app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
@@ -36,45 +32,12 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use('/campgrounds', campgrounds);
-
-
-
-//Middleware for review validation
-const validateReview = (req, res, next) => {
-    const { error } = reviewSchema.validate(req.body);
-    if (error) {
-        const msg = error.details.map(el => el.message).join(',');
-        throw new ExpressError(msg, 400);
-    } else {
-        next();
-    }
-}
+app.use('/campgrounds/:id/reviews', reviews);
 
 //Rendering the home.ejs file within the views directory
 app.get('/', function (req, res) {
     res.render('home');
 });
-
-
-
-//Post request for reviews based on campground ID
-app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async (req, res) => {
-    const campground = await Campground.findById(req.params.id);
-    const review = new Review(req.body.review);
-    campground.reviews.push(review);
-    await review.save();
-    await campground.save();
-    res.redirect(`/campgrounds/${campground._id}`);
-}));
-
-//Delete request for reviews based on ID
-app.delete('/campgrounds/:id/reviews/:reviewId', catchAsync(async (req, res) => {
-    const { id, reviewId } = req.params;
-    await Campground.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
-    await Review.findByIdAndDelete(reviewId);
-    res.redirect(`/campgrounds/${id}`);
-    res.send("Deleted!!")
-}));
 
 app.all('*', (res, req, next) => {
     next(new ExpressError('Page Not Found', 404));
@@ -86,7 +49,6 @@ app.use((err, req, res, next) => {
     if (!err.message) err.message = "Something happened...but it was not good. "
     res.status(statusCode).render('error', { err });
 });
-
 
 //Started the app with nodemon on port 3000
 app.listen(3000, () => {
