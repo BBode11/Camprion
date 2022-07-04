@@ -1,4 +1,4 @@
-//Required express, mongoose, path, and override
+//Required statements
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
@@ -14,6 +14,7 @@ const { campgroundSchema } = require('./schemas.js');
 const { reviewSchema } = require('./schemas.js');
 const Review = require('./models/review.js');
 const campground = require('./models/campground');
+const campgrounds = require('./routes/campgrounds');
 
 //Setup for the mongo database on localhost
 mongoose.connect('mongodb://localhost:27017/camprion');
@@ -34,17 +35,9 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
+app.use('/campgrounds', campgrounds);
 
-//Middleware for validation
-const validateCampground = (req, res, next) => {
-    const { error } = campgroundSchema.validate(req.body);
-    if (error) {
-        const msg = error.details.map(el => el.message).join(',');
-        throw new ExpressError(msg, 400);
-    } else {
-        next();
-    }
-}
+
 
 //Middleware for review validation
 const validateReview = (req, res, next) => {
@@ -62,49 +55,7 @@ app.get('/', function (req, res) {
     res.render('home');
 });
 
-//Rendering campgrounds/index.js file within views directory
-app.get('/campgrounds', catchAsync(async (req, res) => {
-    const campgrounds = await Campground.find()
-    res.render('campgrounds/index', { campgrounds })
-}));
 
-//Rendering create form for campgrounds
-app.get('/campgrounds/create', (req, res) => {
-    res.render('campgrounds/create');
-});
-
-//Post request for saving newly created campgrounds
-app.post('/campgrounds', validateCampground, catchAsync(async (req, res, next) => {
-    const campground = new Campground(req.body.campground);
-    await campground.save();
-    res.redirect(`/campgrounds/${campground._id}`);
-}));
-
-//Rendering campground based on ID
-app.get('/campgrounds/:id', catchAsync(async (req, res) => {
-    const campground = await Campground.findById(req.params.id).populate('reviews');
-    res.render('campgrounds/show', { campground });
-}));
-
-//Rendeing edit form for campgrounds
-app.get('/campgrounds/:id/edit', catchAsync(async (req, res) => {
-    const campground = await Campground.findById(req.params.id);
-    res.render('campgrounds/edit', { campground });
-}));
-
-//Put request for updating campgrounds by ID
-app.put('/campgrounds/:id', validateCampground, catchAsync(async (req, res) => {
-    const { id } = req.params;
-    const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground });
-    res.redirect(`/campgrounds/${campground._id}`);
-}));
-
-//Delete request for campgrounds by ID
-app.delete('/campgrounds/:id', catchAsync(async (req, res) => {
-    const { id } = req.params;
-    await Campground.findByIdAndDelete(id);
-    res.redirect('/campgrounds');
-}));
 
 //Post request for reviews based on campground ID
 app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async (req, res) => {
