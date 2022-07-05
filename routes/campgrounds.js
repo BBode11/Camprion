@@ -5,25 +5,24 @@ const catchAsync = require('../utilities/catchAsync');
 const Campground = require('../models/campground');
 const { isLoggedIn, isAuthor, validateCampground } = require('../middleware');
 
-//Rendering campgrounds/index.js file within views directory
-router.get('/', catchAsync(campgrounds.index));
+router.route('/')
+    //Rendering campgrounds/index.js file within views directory
+    .get(catchAsync(campgrounds.index))
+    //Post request for saving newly created campgrounds
+    .post(isLoggedIn, validateCampground, catchAsync(campgrounds.create));
 
 //Rendering create form for campgrounds
 router.get('/create', isLoggedIn, campgrounds.renderNewForm);
 
-//Post request for saving newly created campgrounds
-router.post('/', isLoggedIn, validateCampground, catchAsync(campgrounds.create));
-
-//Rendering campground based on ID
-router.get('/:id', catchAsync(campgrounds.showCampground));
+router.route('/:id')
+    //Rendering campground based on ID
+    .get(catchAsync(campgrounds.showCampground))
+    //Put request for updating campgrounds by ID
+    .put(isLoggedIn, validateCampground, isAuthor, catchAsync(campgrounds.updateCampground))
+    //Delete request for campgrounds by ID
+    .delete(isLoggedIn, isAuthor, catchAsync(campgrounds.deleteCampground));
 
 //Rendering edit form for campgrounds
 router.get('/:id/edit', isLoggedIn, isAuthor, catchAsync(campgrounds.renderEditForm));
-
-//Put request for updating campgrounds by ID
-router.put('/:id', isLoggedIn, validateCampground, isAuthor, catchAsync(campgrounds.updateCampground));
-
-//Delete request for campgrounds by ID
-router.delete('/:id', isLoggedIn, isAuthor, catchAsync(campgrounds.deleteCampground));
 
 module.exports = router;
