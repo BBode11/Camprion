@@ -24,6 +24,7 @@ module.exports.renderLogin = (req, res) => {
     res.render('users/login');
 }
 
+//  *** Unable to use returnTo variable ***
 module.exports.login = (req, res) => {
     req.flash('success', 'Welcome back!');
     const redirectUrl = req.session.returnTo || '/campgrounds';
