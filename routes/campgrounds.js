@@ -12,11 +12,8 @@ router.route('/')
     //Rendering campgrounds/index.js file within views directory
     .get(catchAsync(campgrounds.index))
     //Post request for saving newly created campgrounds
-    //.post(isLoggedIn, validateCampground, catchAsync(campgrounds.create));
-    .post(upload.array('image'), (req, res) => {
-        console.log(req.body, req.files);
-        res.send("it worked");
-    });
+    .post(isLoggedIn, upload.array('image'), validateCampground, catchAsync(campgrounds.create));
+
 
 //Rendering create form for campgrounds
 router.get('/create', isLoggedIn, campgrounds.renderNewForm);
