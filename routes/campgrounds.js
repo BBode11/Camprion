@@ -22,7 +22,7 @@ router.route('/:id')
     //Rendering campground based on ID
     .get(catchAsync(campgrounds.showCampground))
     //Put request for updating campgrounds by ID
-    .put(isLoggedIn, validateCampground, isAuthor, catchAsync(campgrounds.updateCampground))
+    .put(isLoggedIn, isAuthor, upload.array('image'), validateCampground, catchAsync(campgrounds.updateCampground))
     //Delete request for campgrounds by ID
     .delete(isLoggedIn, isAuthor, catchAsync(campgrounds.deleteCampground));
 
